@@ -25,4 +25,4 @@ jobs:
           package: ''
           name: 'awsAuth'
           compress: 'true'
-          dest: 'dist'
+          dest: '.'
