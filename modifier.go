@@ -6,11 +6,10 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"reflect"
 	"strings"
 
+	//"github.com/spf13/viper"
 	"github.com/pelletier/go-toml"
-	//"github.com/BurntSushi/toml"
 )
 
 type Profile struct {
@@ -23,25 +22,55 @@ type block struct {
 	Profile Profile
 }
 
-func searchString(profile string) {
+func searchString(profile string) Profile {
+	defer reportPanic()
 
-	fileIO, err := os.OpenFile(credentialsPath, os.O_RDWR, 0666)
-	checkPanic(err)
-	defer fileIO.Close()
-	log.Println(reflect.TypeOf(fileIO))
-	rawBytes, err := ioutil.ReadAll(fileIO)
-	log.Println(reflect.TypeOf(rawBytes))
-	check(err)
+	creds, _ := toml.LoadFile(credentialsPath)
 
-	document := rawBytes
+	access := creds.Get(fmt.Sprintf("%v.aws_access_key_id", profile)).(string)
+	secret := creds.Get(fmt.Sprintf("%v.aws_secret_access_key", profile)).(string)
+	token := creds.Get(fmt.Sprintf("%v.aws_session_token", profile)).(string)
 
-	awsProfile := block{}
+	fmt.Println(access)
+	fmt.Println(secret)
+	fmt.Println(token)
 
-	errP := toml.Unmarshal(document, &awsProfile)
-	checkFatal(errP)
-
-	fmt.Println(reflect.TypeOf(awsProfile.Profile.aws_secret_access_key))
+	//fileIO, err := os.OpenFile(credentialsPath, os.O_RDWR, 0666)
+	//checkPanic(err)
+	//defer fileIO.Close()
+	//rawBytes, err := ioutil.ReadAll(fileIO)
+	//check(err)
+	//
+	//document := rawBytes
+	////fmt.Println(string(document))
+	//
+	////awsProfile := block{}
+	//awsProfile := Profile{}
+	//
+	//errP := toml.Unmarshal(document, &awsProfile)
+	//checkFatal(errP)
+	//
+	//fmt.Println(awsProfile.aws_access_key_id)
+	return Profile{
+		aws_access_key_id:     access,
+		aws_secret_access_key: secret,
+		aws_session_token:     token,
+	}
 }
+
+//func searchString(profile string) {
+//	viper.SetConfigName(credentialsFile) // name of config file (without extension)
+//	viper.AddConfigPath(".")             // optionally look for config in the working directory
+//	err := viper.ReadInConfig()          // Find and read the config file
+//
+//	if err != nil { // Handle errors reading the config file
+//		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+//	}
+//	fmt.Println(err)
+//
+//	//fmt.Println("Access Key", viper.GetString("profile")
+//	//fmt.Println("database user", viper.GetString("database.user")
+//}
 
 func credentialsFileCreation(profile string, accessTempKey string, secretTempkey string, tempToken string) {
 	log.Println("the path: " + awsDir)
@@ -74,9 +103,9 @@ func modifyCredentials(profile string, accessTempKey string, secretTempkey strin
 
 	var tempCredentials = []string{
 		fmt.Sprintf("[%v]", profile),
-		fmt.Sprintf("aws_access_key_id = %v", accessTempKey),
-		fmt.Sprintf("aws_secret_access_key = %v", secretTempkey),
-		fmt.Sprintf("aws_session_token = %v", tempToken),
+		fmt.Sprintf("aws_access_key_id = \"%v\"", accessTempKey),
+		fmt.Sprintf("aws_secret_access_key = \"%v\"", secretTempkey),
+		fmt.Sprintf("aws_session_token = \"%v\"", tempToken),
 	}
 
 	output := strings.Join(tempCredentials, "\n")
