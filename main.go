@@ -10,6 +10,8 @@ import (
 	"os"
 	"runtime/debug"
 	"time"
+
+	"github.com/aws/aws-sdk-go/aws/session"
 )
 
 func check(e error) {
@@ -53,57 +55,54 @@ var credentialsFile = "credentials"
 var credentialsPath = awsDir + credentialsFile
 
 func main() {
-	//if len(os.Args) != 2 {
-	//	fmt.Println("Please provide a aws profile")
-	//	return
-	//}
-	//
-	//profile := os.Args[1]
-	//
-	//log.Println("Login in to aws profile: ", profile)
-	//ssoLogin(profile)
-	//log.Println("Login Success!!")
-	//
-	//sess, err := session.NewSessionWithOptions(session.Options{
-	//	SharedConfigState: session.SharedConfigEnable,
-	//	Profile:           profile,
-	//})
-	//check(err)
-	//
-	//credentials, err := sess.Config.Credentials.Get()
-	//check(err)
-	//
-	//accessTempKey := credentials.AccessKeyID
-	//secretTempkey := credentials.SecretAccessKey
-	//tempToken := credentials.SessionToken
-	//
-	//os.Setenv("AWS_ACCESS_KEY_ID", accessTempKey)
-	//os.Setenv("AWS_SECRET_ACCESS_KEY", secretTempkey)
-	//os.Setenv("AWS_SESSION_TOKEN", tempToken)
-	//os.Setenv("AWS_PROFILE", profile)
-	//
-	////credentialsFileCreation(profile, accessTempKey, secretTempkey, tempToken)
-	////modifyCredentials(profile, accessTempKey, secretTempkey, tempToken)
-	////envFile(profile, accessTempKey, secretTempkey, tempToken)
-	//searchString(profile)
-	//
-	//if commandExists("direnv") == true {
-	//	envFile(profile, accessTempKey, secretTempkey, tempToken)
-	//	log.Println("The temporary credentials were added to the .envrc file")
-	//} else {
-	//	fmt.Println("----------------------------------")
-	//	fmt.Println("export AWS_PROFILE=", profile)
-	//	fmt.Println("Access Key: ", os.Getenv("AWS_ACCESS_KEY_ID"))
-	//	fmt.Println("Secret Key: ", os.Getenv("AWS_SECRET_ACCESS_KEY"))
-	//	fmt.Println("Session Token: ", os.Getenv("AWS_SESSION_TOKEN"))
-	//	fmt.Println("----------------------------------")
-	//}
-	////loadEnvrc()
-	exp := timeValidator()
-	now := time.Now()
-
-	if exp.Before(now) {
-		log.Println("is Old")
-		log.Println(exp)
+	if len(os.Args) != 2 {
+		fmt.Println("Please provide a aws profile")
+		return
 	}
+
+	profile := os.Args[1]
+
+	log.Println("Login in to aws profile: ", profile)
+
+	if timeValidator().Before(time.Now().Local()) {
+		log.Println("The credentials are Old")
+		ssoLogin(profile)
+	} else {
+		log.Println(timeValidator().Before(time.Now().Local()))
+	}
+
+	log.Println("Login Success!!")
+
+	sess, err := session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+		Profile:           profile,
+	})
+	check(err)
+
+	credentials, err := sess.Config.Credentials.Get()
+	check(err)
+
+	accessTempKey := credentials.AccessKeyID
+	secretTempkey := credentials.SecretAccessKey
+	tempToken := credentials.SessionToken
+
+	os.Setenv("AWS_ACCESS_KEY_ID", accessTempKey)
+	os.Setenv("AWS_SECRET_ACCESS_KEY", secretTempkey)
+	os.Setenv("AWS_SESSION_TOKEN", tempToken)
+	os.Setenv("AWS_PROFILE", profile)
+
+	searchString(profile)
+
+	if commandExists("direnv") == true {
+		envFile(profile, accessTempKey, secretTempkey, tempToken)
+		log.Println("The temporary credentials were added to the .envrc file")
+	} else {
+		fmt.Println("----------------------------------")
+		fmt.Println("export AWS_PROFILE=", profile)
+		fmt.Println("Access Key: ", os.Getenv("AWS_ACCESS_KEY_ID"))
+		fmt.Println("Secret Key: ", os.Getenv("AWS_SECRET_ACCESS_KEY"))
+		fmt.Println("Session Token: ", os.Getenv("AWS_SESSION_TOKEN"))
+		fmt.Println("----------------------------------")
+	}
+
 }

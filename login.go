@@ -49,19 +49,19 @@ func timeValidator() time.Time {
 			err = json.Unmarshal(byteValue, &config)
 			check(err)
 
-			expirationDate := config.ExpiresAt
-			log.Println("The expiration date is: ", expirationDate)
-			return expirationDate
+			expirationDate = config.ExpiresAt
+			//log.Println("The expiration date is: ", expirationDate)
+			//return expirationDate
 		}
 
 	}
 
-	log.Println(expirationDate)
+	log.Println(expirationDate.Local())
 
-	return expirationDate
+	return expirationDate.Local()
 }
 
-func ssoLogin(profile string) {
+func ssoLogin(profile string) string {
 	app := "aws"
 
 	arg0 := "sso"
@@ -74,9 +74,11 @@ func ssoLogin(profile string) {
 
 	if err != nil {
 		fmt.Println(err.Error())
-		return
+		//return ok
 	}
 
 	// Print the output
 	log.Println(string(stdout))
+
+	return string(stdout)
 }
