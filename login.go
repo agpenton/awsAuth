@@ -17,11 +17,27 @@ type Config struct {
 	ExpiresAt   time.Time `json:"expiresAt"`
 }
 
+//func dirCreation() {
+//	directoryName := awsDir + "sso/cache/"
+//	_, err := os.Stat(directoryName)
+//	if err != nil {
+//		println("os.Stat(): error folder name ", directoryName)
+//		println("and error is: ", err.Error())
+//		if os.IsNotExist(err) {
+//			ssoLogin(profile)
+//		}
+//	} else {
+//		println("os.Stat(): No Error for folderName : ", directoryName)
+//	}
+//
+//}
+
+// Validating the expiration date of the session.
 func timeValidator() time.Time {
 	var expirationDate time.Time
 	defer reportPanic()
 
-	f, err := os.Open(awsDir + "sso/cache/")
+	f, err := os.Open(ssoCacheDir)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -33,7 +49,7 @@ func timeValidator() time.Time {
 	for _, v := range files {
 		if v.Name() != "botocore-client-id-eu-central-1.json" {
 			// Open our jsonFile
-			jsonFile, err := os.Open(v.Name())
+			jsonFile, err := os.Open(ssoCacheDir + "/" + v.Name())
 
 			// if we os.Open returns an error then handle it
 			if err != nil {
@@ -50,8 +66,6 @@ func timeValidator() time.Time {
 			check(err)
 
 			expirationDate = config.ExpiresAt
-			//log.Println("The expiration date is: ", expirationDate)
-			//return expirationDate
 		}
 
 	}
@@ -61,6 +75,7 @@ func timeValidator() time.Time {
 	return expirationDate.Local()
 }
 
+// login command for the aws sso if the session is expired.
 func ssoLogin(profile string) string {
 	app := "aws"
 
@@ -74,7 +89,6 @@ func ssoLogin(profile string) string {
 
 	if err != nil {
 		fmt.Println(err.Error())
-		//return ok
 	}
 
 	// Print the output

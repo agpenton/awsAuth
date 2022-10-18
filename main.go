@@ -50,9 +50,26 @@ func reportPanic() {
 
 var homeDir, _ = os.UserHomeDir()
 var awsDir = homeDir + "/.aws/"
+var ssoCacheDir = awsDir + "sso/cache/"
 var pwdDir = currentDir()
 var credentialsFile = "credentials"
 var credentialsPath = awsDir + credentialsFile
+var profile string
+
+func createSession(profile string) (*session.Session, error) {
+	//sess, err := session.NewSessionWithOptions(session.Options{
+	//	SharedConfigState: session.SharedConfigEnable,
+	//	Profile:           profile,
+	//})
+	sess := session.Must(session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+		Profile:           profile,
+	}))
+
+	//checkFatal(err)
+
+	return sess, nil
+}
 
 func main() {
 	if len(os.Args) != 2 {
@@ -64,20 +81,25 @@ func main() {
 
 	log.Println("Login in to aws profile: ", profile)
 
-	if timeValidator().Before(time.Now().Local()) {
-		log.Println("The credentials are Old")
-		ssoLogin(profile)
+	_, err := os.Stat(ssoCacheDir)
+	if err != nil {
+		println("os.Stat(): error folder name ", ssoCacheDir)
+		println("and error is: ", err.Error())
+		if os.IsNotExist(err) {
+			ssoLogin(profile)
+		}
 	} else {
-		log.Println(timeValidator().Before(time.Now().Local()))
+		if timeValidator().Before(time.Now().Local()) {
+			log.Println("The credentials are Expired")
+			ssoLogin(profile)
+		} else {
+			timeValidator().Before(time.Now().Local())
+		}
 	}
 
 	log.Println("Login Success!!")
 
-	sess, err := session.NewSessionWithOptions(session.Options{
-		SharedConfigState: session.SharedConfigEnable,
-		Profile:           profile,
-	})
-	check(err)
+	sess, _ := createSession(profile)
 
 	credentials, err := sess.Config.Credentials.Get()
 	check(err)
@@ -94,7 +116,8 @@ func main() {
 	searchString(profile)
 
 	if commandExists("direnv") == true {
-		envFile(profile, accessTempKey, secretTempkey, tempToken)
+		//envFile(profile, accessTempKey, secretTempkey, tempToken)
+		envFile()
 		log.Println("The temporary credentials were added to the .envrc file")
 	} else {
 		fmt.Println("----------------------------------")
