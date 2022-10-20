@@ -32,10 +32,6 @@ func searchString(profile string) Profile {
 	secret := creds.Get(fmt.Sprintf("%v.aws_secret_access_key", profile)).(string)
 	token := creds.Get(fmt.Sprintf("%v.aws_session_token", profile)).(string)
 
-	fmt.Println(access)
-	fmt.Println(secret)
-	fmt.Println(token)
-
 	// Return the values from the function.
 	return Profile{
 		aws_access_key_id:     access,
@@ -45,7 +41,7 @@ func searchString(profile string) Profile {
 }
 
 func credentialsFileCreation(profile string, accessTempKey string, secretTempkey string, tempToken string) {
-	log.Println("the path: " + awsDir)
+	//log.Println("the path: " + awsDir)
 	var _, err = os.Stat(credentialsPath)
 
 	if os.IsNotExist(err) {
@@ -65,7 +61,7 @@ func credentialsFileCreation(profile string, accessTempKey string, secretTempkey
 		err = w.Flush()
 		check(err)
 	} else {
-		log.Println("File already exists!", credentialsFile)
+		log.Printf("The file %v already exists!\n", credentialsFile)
 		log.Println("modifying the values")
 		modifyCredentials(profile, accessTempKey, secretTempkey, tempToken)
 		log.Println("done")

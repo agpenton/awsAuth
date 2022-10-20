@@ -113,7 +113,8 @@ func main() {
 	os.Setenv("AWS_SESSION_TOKEN", tempToken)
 	os.Setenv("AWS_PROFILE", profile)
 
-	searchString(profile)
+	//searchString(profile)
+	credentialsFileCreation(profile, accessTempKey, secretTempkey, tempToken)
 
 	if commandExists("direnv") == true {
 		//envFile(profile, accessTempKey, secretTempkey, tempToken)

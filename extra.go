@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -65,9 +66,10 @@ func envFile() {
 			log.Fatal(err)
 		}
 	} else {
-		log.Println("File already exists!", filename)
+		log.Printf("The file %s already exists!\n", filename)
 		loadEnvrc()
 		modifyEnvrc()
+		Shellout("direnv allow")
 		return
 	}
 
@@ -81,4 +83,16 @@ func modifyEnvrc() {
 	output := envrcVars()
 	err := ioutil.WriteFile(file, []byte(output), 0644)
 	checkFatal(err)
+}
+
+const ShellToUse = "bash"
+
+func Shellout(command string) (error, string, string) {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	cmd := exec.Command(ShellToUse, "-c", command)
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	return err, stdout.String(), stderr.String()
 }
