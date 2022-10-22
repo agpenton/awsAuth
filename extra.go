@@ -43,6 +43,7 @@ func envrcVars() string {
 		fmt.Sprintf("export AWS_ACCESS_KEY_ID=\"%v\"", os.Getenv("AWS_ACCESS_KEY_ID")),
 		fmt.Sprintf("export AWS_SECRET_ACCESS_KEY=\"%v\"", os.Getenv("AWS_SECRET_ACCESS_KEY")),
 		fmt.Sprintf("export AWS_SESSION_TOKEN=\"%v\"", os.Getenv("AWS_SESSION_TOKEN")),
+		fmt.Sprintf("export AWS_REGION=\"%v\"", os.Getenv("AWS_REGION")),
 	}
 	output := strings.Join(envrc, "\n")
 

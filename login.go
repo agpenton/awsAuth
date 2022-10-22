@@ -66,6 +66,7 @@ func timeValidator() time.Time {
 			check(err)
 
 			expirationDate = config.ExpiresAt
+			os.Setenv("AWS_REGION", config.Region)
 		}
 
 	}
